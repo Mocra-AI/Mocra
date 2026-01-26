@@ -1,22 +1,70 @@
-/**
- * Test function to demonstrate the package functionality
- * @param name - The name to greet
- * @returns A greeting message
- */
-export function greet(name: string): string {
-  return `Hello, ${name}! Welcome to Mocra.`;
+interface ExtraCriterion {
+  criterionName: string;
+  criterionDescription: string;
 }
 
-/**
- * Example test function that can be run directly
- */
-export function test(): void {
-  console.log(greet("World"));
-  console.log("✅ Mocra package is working correctly!");
-}
+type DefaultCriterionName =
+  | "UNNATURAL PHYSICS"
+  | "MORPHING"
+  | "FLICKERING"
+  | "ARTIFACTING"
+  | "TEXT ISSUES";
 
-// Run test if this file is executed directly
-if (require.main === module) {
-  test();
-}
+const MOCRA_API_DOMAIN = "api.mocra.io";
 
+class VideoObservabilityApi {
+  private apiKey: string;
+
+  public constructor(apiKey: string) {
+    this.apiKey = apiKey;
+  }
+
+  public async scoreVideo(
+    videoUrl: string,
+    extraCriteria: Array<ExtraCriterion> = [],
+    ignoreCriteria: Array<DefaultCriterionName> = [],
+  ): Promise<Record<string, number>> {
+    if (extraCriteria.length === 0 && ignoreCriteria.length === 0) {
+      const response = await fetch(`https://${MOCRA_API_DOMAIN}/observe`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${this.apiKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          videoUrl,
+        }),
+      });
+      if (response.ok) {
+        return (await response.json()) as Record<string, number>;
+      } else {
+        throw new Error(
+          `Mocra returned unsuccessfully with error ${response.status}`,
+        );
+      }
+    } else {
+      const response = await fetch(
+        `https://${MOCRA_API_DOMAIN}/customObserve`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${this.apiKey}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            videoUrl,
+            customCriteria: extraCriteria,
+            removeCriteria: ignoreCriteria,
+          }),
+        },
+      );
+      if (response.ok) {
+        return (await response.json()) as Record<string, number>;
+      } else {
+        throw new Error(
+          `Mocra returned unsuccessfully with error ${response.status}`,
+        );
+      }
+    }
+  }
+}
