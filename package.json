@@ -20,6 +20,6 @@
   "type": "commonjs",
   "devDependencies": {
     "@types/node": "^25.0.9",
-    "typescript": "^5.9.3"
+    "prettier": "^3.8.1"
   }
 }
