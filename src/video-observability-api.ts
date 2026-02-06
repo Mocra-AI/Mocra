@@ -14,12 +14,17 @@ type DefaultCriterionName =
 
 const ScoreMapSchema = z.object({
   severity: z.number(),
-  criteria: z.array(z.record(z.string(), z.number())),
+  criteria: z.array(
+    z.object({
+      name: z.string(),
+      score: z.number(),
+    }),
+  ),
 });
 
 type ScoreMap = z.infer<typeof ScoreMapSchema>;
 
-const MOCRA_API_DOMAIN = "api.mocra.io";
+const MOCRA_API_DOMAIN = "https://api.mocra.io";
 
 class VideoObservabilityApi {
   private apiKey: string;
@@ -33,47 +38,24 @@ class VideoObservabilityApi {
     extraCriteria: Array<ExtraCriterion> = [],
     ignoreCriteria: Array<DefaultCriterionName> = [],
   ): Promise<ScoreMap> {
-    if (extraCriteria.length === 0 && ignoreCriteria.length === 0) {
-      const response = await fetch(`https://${MOCRA_API_DOMAIN}/observe`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${this.apiKey}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          videoUrl,
-        }),
-      });
-      if (response.ok) {
-        return ScoreMapSchema.parse(await response.json());
-      } else {
-        throw new Error(
-          `Mocra returned unsuccessfully with error ${response.status}`,
-        );
-      }
+    const response = await fetch(`${MOCRA_API_DOMAIN}/observe`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${this.apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        videoUrl,
+        customCriteria: extraCriteria,
+        removeCriteria: ignoreCriteria,
+      }),
+    });
+    if (response.ok) {
+      return ScoreMapSchema.parse(await response.json());
     } else {
-      const response = await fetch(
-        `https://${MOCRA_API_DOMAIN}/customObserve`,
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${this.apiKey}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            videoUrl,
-            customCriteria: extraCriteria,
-            removeCriteria: ignoreCriteria,
-          }),
-        },
+      throw new Error(
+        `Mocra returned unsuccessfully with error ${response.status}`,
       );
-      if (response.ok) {
-        return ScoreMapSchema.parse(await response.json());
-      } else {
-        throw new Error(
-          `Mocra returned unsuccessfully with error ${response.status}`,
-        );
-      }
     }
   }
 }
