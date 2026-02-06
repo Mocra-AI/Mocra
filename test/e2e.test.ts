@@ -59,8 +59,12 @@ describe("VideoObservabilityApi", () => {
       const result = await api.scoreVideo(bigBuckBunnyVideoUrl);
       console.log({ bigBuckBunnyResult: JSON.stringify(result) });
       expect(result.severity).to.be.at.least(0).and.at.most(80);
-      expect(Object.keys(result.criteria)).to.containSubset(defaultScoresArray);
-      expect(defaultScoresArray).to.containSubset(Object.keys(result.criteria));
+      expect(result.criteria.map((c) => c.name)).to.containSubset(
+        defaultScoresArray,
+      );
+      expect(defaultScoresArray).to.containSubset(
+        result.criteria.map((c) => c.name),
+      );
     });
 
     it("should score low-res Big Buck Bunny video high with only res param", async () => {
@@ -78,8 +82,12 @@ describe("VideoObservabilityApi", () => {
       );
       console.log({ bigBuckBunnyResult: JSON.stringify(result) });
       expect(result.severity).to.be.at.least(60).and.at.most(100);
-      expect(Object.keys(result.criteria)).to.containSubset(["Resolution"]);
-      expect(["Resolution"]).to.containSubset(Object.keys(result.criteria));
+      expect(result.criteria.map((c) => c.name)).to.containSubset([
+        "Resolution",
+      ]);
+      expect(["Resolution"]).to.containSubset(
+        result.criteria.map((c) => c.name),
+      );
     });
   });
 });
