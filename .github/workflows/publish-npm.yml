@@ -27,6 +27,16 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Set version from tag
+        run: |
+          if [ "${{ github.event_name }}" = "release" ]; then
+            TAG="${{ github.event.release.tag_name }}"
+          else
+            TAG="${{ github.ref_name }}"
+          fi
+          VERSION="${TAG#v}"
+          npm version "$VERSION" --no-git-tag-version --allow-same-version
+
       - name: Build
         run: npm run build
 
