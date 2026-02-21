@@ -18,6 +18,10 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Mocra-AI/Mocra-JS"
+  },
   "type": "module",
   "devDependencies": {
     "@eslint/js": "^9.39.2",
